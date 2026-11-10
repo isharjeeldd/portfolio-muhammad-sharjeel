@@ -2,6 +2,7 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import { site, ordered } from '../data/site';
 import { getPosts, readingTime } from '../lib/posts';
 
@@ -43,41 +44,42 @@ const canonical = new URL(cleanPath, Astro.site).href;
 const imageUrl = new URL(image, Astro.site).href;
 const path = cleanPath;
 const posts = bare ? [] : await getPosts();
+const short = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
 const palette = [
   {
     name: 'Pages',
     items: [
-      { label: 'Home', href: '/', hint: 'Page', k: 'start index' },
-      { label: 'Work', href: '/work', hint: 'Page', k: 'projects portfolio' },
-      { label: 'About', href: '/about', hint: 'Page', k: 'experience how i work stack cv' },
-      { label: 'Writing', href: '/blog', hint: 'Page', k: 'blog posts articles' },
-      { label: 'Get in touch', href: '/#contact', hint: 'Section', k: 'contact hire email' },
+      { label: 'Home', href: '/', hint: 'Page', d: 'The hero, the system map and selected work' },
+      { label: 'Work', href: '/work', hint: 'Page', d: `All ${ordered.length} projects, each with a glimpse of its interface` },
+      { label: 'About', href: '/about', hint: 'Page', d: 'Experience, how I work and the stack I use' },
+      { label: 'Writing', href: '/blog', hint: 'Page', d: `${posts.length} posts on engineering, AI and design` },
+      { label: 'Get in touch', href: '/#contact', hint: 'Section', d: 'Contact me by email or hire me on Upwork' },
     ],
   },
   {
     name: 'Projects',
-    items: ordered.map((p) => ({ label: p.name, href: `/work#${p.slug}`, hint: 'Project', k: String(p.stack) })),
+    items: ordered.map((p) => ({ label: p.name, href: `/work#${p.slug}`, hint: 'Project', d: p.summary })),
   },
   {
     name: 'Writing',
-    items: posts.map((p) => ({ label: p.data.title, href: `/blog/${p.id}`, hint: readingTime(p.body), k: p.data.tags.join(' ') })),
+    items: posts.map((p) => ({ label: p.data.title, href: `/blog/${p.id}`, hint: readingTime(p.body), d: p.data.description })),
   },
   {
     name: 'Actions',
     items: [
-      { label: 'Switch theme', act: 'theme', hint: 'Action', k: 'dark light mode' },
-      { label: 'Switch sound on or off', act: 'sound', hint: 'Action', k: 'audio mute volume' },
-      { label: 'Switch the swarm on or off', act: 'swarm', hint: 'Action', k: 'cursors animation motion' },
-      { label: 'Replay or skip the build', act: 'build', hint: 'Action', k: 'again restart' },
-      { label: 'Copy email address', act: 'email', hint: 'Action', k: 'contact mail' },
+      { label: 'Switch theme', act: 'theme', hint: 'Action', d: 'Change between light and dark mode' },
+      { label: 'Switch sound', act: 'sound', hint: 'Action', d: 'Turn the audio on or off (mute)' },
+      { label: 'Switch the swarm', act: 'swarm', hint: 'Action', d: 'Turn the cursors and the build animation on or off' },
+      { label: 'Replay the build', act: 'build', hint: 'Action', d: 'Draw this page again from blank, or skip a build in progress' },
+      { label: 'Copy email address', act: 'email', hint: 'Action', d: site.email },
     ],
   },
   {
     name: 'Elsewhere',
     items: [
-      { label: 'GitHub', href: site.github, hint: 'Opens in a new tab', k: 'code source' },
-      { label: 'LinkedIn', href: site.linkedin, hint: 'Opens in a new tab', k: 'profile' },
-      { label: 'Upwork', href: site.upwork, hint: 'Opens in a new tab', k: 'hire freelance' },
+      { label: 'GitHub', href: site.github, hint: 'New tab', d: short(site.github) },
+      { label: 'LinkedIn', href: site.linkedin, hint: 'New tab', d: short(site.linkedin) },
+      { label: 'Upwork', href: site.upwork, hint: 'New tab', d: 'Hire me for freelance work' },
     ],
   },
 ];
@@ -90,7 +92,7 @@ const nav = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bare={bare ? '' : undefined} transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -127,7 +129,8 @@ const nav = [
 
     {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
 
-    <script is:inline define:vars={{ bare }}>
+    <ClientRouter fallback="swap" />
+    <script is:inline>
       (() => {
         const d = document.documentElement;
         const apply = () => {
@@ -149,12 +152,14 @@ const nav = [
         });
 
         // Start blank only when the swarm is going to build the page.
-        let off = false;
-        try {
-          off = localStorage.getItem('swarm') === 'off';
-        } catch {}
-        if (!bare && !off && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const blank = (first) => {
+          let off = false;
+          try {
+            off = localStorage.getItem('swarm') === 'off';
+          } catch {}
+          if (d.hasAttribute('data-bare') || off || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
           d.classList.add('building');
+          if (!first) return;
           // First page of a visit opens behind the loader. Crawlers skip it.
           let entered = true;
           try {
@@ -165,7 +170,14 @@ const nav = [
           setTimeout(() => {
             if (!window.__swarm || !window.__shell) d.classList.remove('building', 'intro');
           }, 3500);
-        }
+        };
+        blank(true);
+        // Moving between pages swaps the content without a reload, so the page keeps its
+        // state (and its sound). Set the theme and the blank state again before it paints.
+        document.addEventListener('astro:after-swap', () => {
+          apply();
+          blank(false);
+        });
       })();
     </script>
     <noscript><style>.dock [data-pal-open], .dock [data-sound-toggle] { display: none; } html.building [data-b], html.building .prose > * { visibility: visible !important; }</style></noscript>
@@ -290,13 +302,19 @@ const nav = [
                   </p>
                   {g.items.map((i) =>
                     'href' in i ? (
-                      <a role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} href={i.href} data-k={i.k}>
-                        <span>{i.label}</span>
+                      <a role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} href={i.href}>
+                        <span class="pal-main">
+                          <span class="pal-t" data-pal-text>{i.label}</span>
+                          <span class="pal-d" data-pal-text>{i.d}</span>
+                        </span>
                         <small>{i.hint}</small>
                       </a>
                     ) : (
-                      <button type="button" role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} data-act={i.act} data-k={i.k}>
-                        <span>{i.label}</span>
+                      <button type="button" role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} data-act={i.act}>
+                        <span class="pal-main">
+                          <span class="pal-t" data-pal-text>{i.label}</span>
+                          <span class="pal-d" data-pal-text>{i.d}</span>
+                        </span>
                         <small>{i.hint}</small>
                       </button>
                     ),
@@ -304,8 +322,9 @@ const nav = [
                 </div>
               ))}
             </div>
-            <p class="pal-empty" data-pal-empty hidden>Nothing matches that.</p>
+            <p class="pal-empty" data-pal-empty hidden>Nothing matches <b data-pal-q></b>. Try a page, a project or a topic.</p>
             <p class="pal-foot" aria-hidden="true">
+              <span class="pal-count" data-pal-count></span>
               <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
               <span><kbd>↵</kbd> open</span>
               <span><kbd>esc</kbd> close</span>
@@ -315,24 +334,6 @@ const nav = [
         </>
       )
     }
-    <script is:inline>
-      (() => {
-        const el = document.querySelector('[data-clock]');
-        if (!el) return;
-        const f = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const t = () => (el.textContent = f.format(new Date()));
-        t();
-        setInterval(t, 1000);
-      })();
-    </script>
-    <script is:inline>
-      // External links open in a new tab.
-      document.querySelectorAll('a[href^="http"]').forEach((a) => {
-        if (a.host === location.host) return;
-        a.target = '_blank';
-        a.rel = (a.rel ? a.rel + ' ' : '') + 'noopener noreferrer';
-      });
-    </script>
     {!bare && <script src="../scripts/shell.ts" />}
     {!bare && <script src="../scripts/swarm.ts" />}
     {!bare && <script src="../scripts/motion.ts" />}

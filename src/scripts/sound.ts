@@ -139,3 +139,4 @@ document.addEventListener('click', (e) => {
   if ((e.target as Element | null)?.closest?.('[data-sound-toggle]')) setSound(!soundOn());
 });
 sync();
+document.addEventListener('astro:after-swap', sync);

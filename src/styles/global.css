@@ -2781,43 +2781,90 @@ html.intro .dock {
 /* ---------- command menu ---------- */
 
 .pal {
-  width: min(600px, calc(100vw - 32px));
-  max-height: min(560px, calc(100dvh - 120px));
-  margin: 12vh auto 0;
+  width: min(660px, calc(100vw - 32px));
+  height: min(580px, calc(100dvh - 140px));
+  margin: 11vh auto 0;
   padding: 0;
   border: 1px solid var(--fg);
   border-radius: 10px;
   background: var(--bg);
   color: var(--fg);
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(14px) scale(0.975);
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.2s var(--ease),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
 }
 
 .pal[open] {
   display: flex;
   flex-direction: column;
+  opacity: 1;
+  transform: none;
+  transition-duration: 0.26s, 0.42s, 0.42s, 0.42s;
+}
+
+@starting-style {
+  .pal[open] {
+    opacity: 0;
+    transform: translateY(14px) scale(0.975);
+  }
 }
 
 .pal::backdrop {
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 0%, transparent);
+  transition:
+    background-color 0.2s var(--ease),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
+}
+
+.pal[open]::backdrop {
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  transition-duration: 0.36s;
+}
+
+@starting-style {
+  .pal[open]::backdrop {
+    background: color-mix(in srgb, var(--bg) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pal,
+  .pal::backdrop {
+    transition: none;
+  }
 }
 
 .pal-top {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 14px 0 18px;
+  padding: 0 16px 0 20px;
   border-bottom: 1px solid var(--line);
+}
+
+.pal-top::before {
+  content: '/';
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--muted);
 }
 
 .pal-top input {
   flex: 1;
   min-width: 0;
-  padding: 17px 0;
+  padding: 19px 0;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
-  font-size: 16px;
+  font-size: 17px;
+  letter-spacing: -0.01em;
   outline: none;
 }
 
@@ -2853,17 +2900,19 @@ html.intro .dock {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 6px;
-  scroll-padding: 34px 0 6px;
-}
-
-.pal-list [hidden] {
-  display: none;
+  padding: 4px 8px 10px;
+  scroll-padding: 40px 0 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
 .pal-h {
-  margin: 0;
-  padding: 10px 12px 6px;
+  position: sticky;
+  top: -4px;
+  z-index: 1;
+  margin: 0 -8px;
+  padding: 14px 22px 8px;
+  background: var(--bg);
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -2873,22 +2922,59 @@ html.intro .dock {
 
 .pal-list [role='option'] {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 14px;
   border-radius: 6px;
   text-align: left;
-  font-size: 15px;
-  line-height: 1.35;
+  transition:
+    background-color 0.12s var(--ease),
+    color 0.12s var(--ease);
 }
 
-.pal-list [role='option'] span {
+/* after the rule above on purpose: filtered-out results must really go */
+.pal-list [hidden] {
+  display: none;
+}
+
+.pal-main {
+  display: grid;
+  gap: 2px;
   min-width: 0;
+}
+
+.pal-t,
+.pal-d {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pal-t {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.pal-d {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.pal mark {
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.pal-d mark {
+  color: var(--fg);
 }
 
 .pal-list [role='option'] small {
@@ -2903,30 +2989,54 @@ html.intro .dock {
   color: var(--bg);
 }
 
-.pal-list [role='option'][aria-selected='true'] small {
+.pal-list [role='option'][aria-selected='true'] :is(.pal-d, .pal-d mark, small) {
   color: inherit;
-  opacity: 0.7;
+}
+
+.pal-list [role='option'][aria-selected='true'] :is(.pal-d, small) {
+  opacity: 0.72;
+}
+
+.pal-list [role='option'][aria-selected='true'] small::after {
+  content: ' ↵';
 }
 
 .pal-empty {
+  flex: 1;
   margin: 0;
-  padding: 26px 18px;
+  padding: 34px 22px;
   color: var(--muted);
+}
+
+.pal-empty b {
+  font-weight: 500;
+  color: var(--fg);
 }
 
 .pal-empty[hidden] {
   display: none;
 }
 
+.pal-empty:not([hidden]) ~ .pal-foot .pal-count,
+.pal-list:has(+ .pal-empty:not([hidden])) {
+  display: none;
+}
+
 .pal-foot {
   display: flex;
+  align-items: center;
   gap: 18px;
   margin: 0;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-top: 1px solid var(--line);
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
+}
+
+.pal-count {
+  margin-right: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 .pal-foot kbd {
@@ -2942,7 +3052,15 @@ html.intro .dock {
   }
 
   .pal {
-    margin-top: 8vh;
-    max-height: calc(100dvh - 16vh - 80px);
+    margin-top: 7vh;
+    height: min(560px, calc(100dvh - 14vh - 90px));
+  }
+
+  .pal-foot > span:not(.pal-count) {
+    display: none;
+  }
+
+  .pal-foot {
+    display: flex;
   }
 }

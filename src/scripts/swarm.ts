@@ -861,20 +861,38 @@ function apply() {
   }
 }
 
-function init() {
-  (window as unknown as { __swarm: boolean }).__swarm = true;
+// Runs for the first page and again each time the content is swapped for another page.
+function page() {
   canvas = document.getElementById('swarm') as HTMLCanvasElement | null;
   ctx = canvas?.getContext('2d') ?? null;
+  for (const a of agents) {
+    a.job = null;
+    a.task = null;
+    a.fx = [];
+    a.shape = 'arrow';
+  }
+  perch = null;
+  rate = 1;
+  hudText = '\u0000';
   if (!canvas || !ctx) {
+    building = false;
+    tasks = [];
     root.classList.remove('building');
+    stop();
     return;
   }
-
   building = root.classList.contains('building') && wanted();
   if (!building) root.classList.remove('building');
   readTheme();
   collect();
   resize();
+  apply();
+}
+
+function init() {
+  (window as unknown as { __swarm: boolean }).__swarm = true;
+  page();
+  document.addEventListener('astro:after-swap', page);
   document.fonts?.ready.then(() => {
     readTheme();
     measure();
@@ -939,7 +957,6 @@ function init() {
   new MutationObserver(readTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
 
-  apply();
 }
 
 init();

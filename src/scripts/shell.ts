@@ -63,7 +63,12 @@ function intro() {
 
 /* ---------- command menu ---------- */
 
+let openMenu: (() => void) | null = null;
+let closeMenu: (() => void) | null = null;
+
+// Binds to the menu in the current page. Runs again whenever the page content is swapped.
 function palette() {
+  openMenu = closeMenu = null;
   const dlg = document.querySelector<HTMLDialogElement>('[data-pal]');
   const input = dlg?.querySelector<HTMLInputElement>('[data-pal-input]');
   const list = dlg?.querySelector<HTMLElement>('[data-pal-list]');
@@ -75,7 +80,20 @@ function palette() {
 
   const items = [...list.querySelectorAll<HTMLElement>('[role="option"]')];
   const groups = [...list.querySelectorAll<HTMLElement>('[data-pal-group]')];
-  const hay = items.map((i) => `${i.querySelector('span')?.textContent ?? ''} ${i.dataset.k ?? ''}`.toLowerCase());
+  // Only what is shown is searched, so every result can be seen to match.
+  const texts = items.map((i) => [...i.querySelectorAll<HTMLElement>('[data-pal-text]')].map((el) => ({ el, raw: el.textContent ?? '' })));
+  const hay = texts.map((t) => t.map((x) => x.raw).join(' ').toLowerCase());
+  const count = dlg.querySelector<HTMLElement>('[data-pal-count]');
+  const asked = dlg.querySelector<HTMLElement>('[data-pal-q]');
+  const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+  const mark = (raw: string, words: string[]) => {
+    if (!words.length) return esc(raw);
+    const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    return raw
+      .split(re)
+      .map((part, n) => (n % 2 ? `<mark>${esc(part)}</mark>` : esc(part)))
+      .join('');
+  };
   let visible: HTMLElement[] = items;
   let active = 0;
 
@@ -102,21 +120,27 @@ function palette() {
     items.forEach((it, i) => {
       const ok = words.every((w) => hay[i].includes(w));
       it.hidden = !ok;
-      if (ok) visible.push(it);
+      if (!ok) return;
+      visible.push(it);
+      for (const t of texts[i]) t.el.innerHTML = mark(t.raw, words);
     });
+    if (count) count.textContent = words.length ? `${visible.length} ${visible.length === 1 ? 'result' : 'results'}` : `${items.length} places to go`;
+    if (asked) asked.textContent = `"${input!.value.trim()}"`;
     for (const g of groups) g.hidden = !g.querySelector('[role="option"]:not([hidden])');
     empty!.hidden = visible.length > 0;
     setActive(0);
   }
 
-  function open() {
-    if (dlg!.open || root.classList.contains('intro')) return;
-    input!.value = '';
-    dlg!.showModal();
+  openMenu = () => {
+    if (dlg.open) return dlg.close();
+    if (root.classList.contains('intro')) return;
+    input.value = '';
+    dlg.showModal();
     filter();
-    list!.scrollTop = 0;
-    input!.focus();
-  }
+    list.scrollTop = 0;
+    input.focus();
+  };
+  closeMenu = () => dlg.open && dlg.close();
 
   function run(act: string, el: HTMLElement) {
     if (act === 'theme') document.querySelector<HTMLElement>('[data-theme-toggle]')?.click();
@@ -158,27 +182,60 @@ function palette() {
     if (it.dataset.act) run(it.dataset.act, it);
     else dlg.close();
   });
-
-  document.addEventListener('click', (e) => {
-    if ((e.target as Element | null)?.closest?.('[data-pal-open]')) open();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    const k = e.key.toLowerCase();
-    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && k === 'k') {
-      e.preventDefault();
-      if (dlg.open) dlg.close();
-      else open();
-      return;
-    }
-    const t = e.target as HTMLElement | null;
-    const typing = !!t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName));
-    if (k === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      e.preventDefault();
-      open();
-    }
-  });
 }
 
+/* ---------- small per-page things ---------- */
+
+let clock = 0;
+const clockFmt = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Karachi',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+function page() {
+  // External links open in a new tab.
+  document.querySelectorAll<HTMLAnchorElement>('a[href^="http"]').forEach((a) => {
+    if (a.host === location.host || a.target === '_blank') return;
+    a.target = '_blank';
+    a.rel = `${a.rel ? `${a.rel} ` : ''}noopener noreferrer`;
+  });
+
+  clearInterval(clock);
+  const el = document.querySelector<HTMLElement>('[data-clock]');
+  if (el) {
+    const t = () => (el.textContent = clockFmt.format(new Date()));
+    t();
+    clock = window.setInterval(t, 1000);
+  }
+
+  palette();
+}
+
+// These listen on the document, which survives page changes, so they are added once.
+document.addEventListener('click', (e) => {
+  if ((e.target as Element | null)?.closest?.('[data-pal-open]')) openMenu?.();
+});
+
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && k === 'k') {
+    e.preventDefault();
+    openMenu?.();
+    return;
+  }
+  const t = e.target as HTMLElement | null;
+  const typing = !!t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName));
+  if (k === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    openMenu?.();
+  }
+});
+
+document.addEventListener('astro:before-swap', () => closeMenu?.());
+document.addEventListener('astro:after-swap', page);
+
 intro();
-palette();
+page();
