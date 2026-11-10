@@ -13,3 +13,7 @@ npx astro build
 ```
 
 Inspired by [Swarm](https://califa.github.io/swarm-site/) by Joel Califa and [Swarm Rebuild](https://github.com/DhvanilPatel/swarm-cursors) by Dhvanil Patel. The engine here is written from scratch.
+
+## Licence
+
+The code is MIT licensed. The writing in `src/content/blog` and the personal details in `src/data/site.ts` are mine: please replace them with your own rather than republishing them.

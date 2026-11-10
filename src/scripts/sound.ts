@@ -128,7 +128,12 @@ export const sfx = {
   },
 };
 
+// Sound was chosen on an earlier page of this visit: start it again straight away.
+// Chrome carries the permission across pages of the same site. Browsers that do not
+// will start at the next click or key press through the listeners below.
+unlock();
 document.addEventListener('pointerdown', unlock, { passive: true });
+document.addEventListener('touchend', unlock, { passive: true });
 document.addEventListener('keydown', unlock);
 document.addEventListener('click', (e) => {
   if ((e.target as Element | null)?.closest?.('[data-sound-toggle]')) setSound(!soundOn());
