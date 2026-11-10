@@ -1,0 +1,17 @@
+---
+interface Props {
+  no: string;
+  title: string;
+  note?: string;
+  href?: string;
+  id?: string;
+}
+const { no, title, note, href, id } = Astro.props;
+---
+
+<header class="sec-head">
+  <span class="sec-no" data-b="t">{no}</span>
+  <h2 id={id} data-b="t">{title}</h2>
+  {note && (href ? <a class="sec-note" href={href} data-b="t" data-swarm>{note}</a> : <span class="sec-note" data-b="t">{note}</span>)}
+</header>
+<hr data-b="l" />

@@ -1,0 +1,151 @@
+---
+import Base from '../layouts/Base.astro';
+import Case from '../components/Case.astro';
+import SecHead from '../components/SecHead.astro';
+import PostList from '../components/PostList.astro';
+import Contact from '../components/Contact.astro';
+import { site, projects, featured } from '../data/site';
+import { getPosts } from '../lib/posts';
+
+const posts = (await getPosts()).slice(0, 4);
+
+const numbers = [
+  { n: '51', label: 'public releases of the PolyX SDK' },
+  { n: '4', label: 'products taken to production on Kubernetes' },
+  { n: '6,400', label: 'automated backend tests on Alara Code' },
+  { n: '32', label: 'tables migrated to multi-tenancy in one move' },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${site.url}/#person`,
+    name: site.name,
+    url: site.url,
+    image: `${site.url}/og.png`,
+    email: `mailto:${site.email}`,
+    jobTitle: site.role,
+    worksFor: { '@type': 'Organization', name: site.company },
+    address: { '@type': 'PostalAddress', addressLocality: 'Islamabad', addressCountry: 'PK' },
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'National University of Modern Languages' },
+    knowsAbout: ['Multi-tenant SaaS', 'Identity and access management', 'Kubernetes', 'TypeScript', 'Model Context Protocol', 'AI agents'],
+    sameAs: [site.github, site.linkedin, site.upwork],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${site.url}/#website`,
+    url: site.url,
+    name: site.shortName,
+    description: site.description,
+    inLanguage: 'en',
+    author: { '@id': `${site.url}/#person` },
+  },
+];
+---
+
+<Base jsonLd={jsonLd}>
+  <section class="hero">
+    <div class="hero-meta">
+      <p data-b="t">Portfolio ’26</p>
+      <p class="status" data-b="t"><i aria-hidden="true"></i>Shipping at {site.company}</p>
+    </div>
+    <h1 data-b="t">
+      <span class="sr">{site.name}, {site.role}. </span>Platform engineering <em>for AI products that hold more than one customer.</em>
+    </h1>
+    <div class="hero-foot">
+      <p class="hero-intro" data-b="t">
+        I am Sharjeel, a {site.role} in Islamabad. I build the identity, tenancy and Kubernetes layer that a suite of AI
+        products stands on, and I run it in production.
+      </p>
+      <p class="hero-links">
+        <a href="/work" data-b="t" data-swarm>Selected work ↗</a>
+        <a href={site.upwork} data-b="t" data-swarm>Hire me on Upwork ↗</a>
+        <a href={site.github} rel="me" data-b="t" data-swarm>GitHub ↗</a>
+        <a href={site.linkedin} rel="me" data-b="t" data-swarm>LinkedIn ↗</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="map-wrap" aria-labelledby="map-h">
+    <div class="map" data-b="r" data-map>
+      <div class="map-head">
+        <h2 id="map-h" data-b="t">System map</h2>
+        <p class="map-log" data-b="t" data-maplog>Hover a product to send a request through the stack</p>
+      </div>
+      <div class="map-grid">
+        <div class="map-row products">
+          <span class="wf mnode" data-b="r" data-node="p0">Alara Code<small>delivery packs</small></span>
+          <span class="wf mnode" data-b="d" data-node="p1">Alara Space<small>team wiki</small></span>
+          <span class="wf mnode" data-b="d" data-node="p2">Alara Plan<small>project tracker</small></span>
+          <span class="wf mnode" data-b="d" data-node="p3">ODIN<small>engagement</small></span>
+        </div>
+        <div class="map-row wires">
+          {[0, 1, 2, 3].map((i) => <i class="vl" data-b="l" data-wire={`p${i}`}><b /></i>)}
+        </div>
+        <span class="wf mnode wide" data-b="r" data-node="sdk">PolyX SDK<small>four npm packages · the browser never holds a token</small></span>
+        <div class="map-row wires one"><i class="vl" data-b="l" data-wire="sdk"><b></b></i></div>
+        <div class="wf fill mnode wide core" data-b="r" data-node="core">
+          <span>PolyX<small>identity, tenancy and access for every product</small></span>
+          <span class="svc">
+            <b data-svc>identity</b><b data-svc>notifications</b><b data-svc>api tooling</b><b data-svc>logging</b><b data-svc>sandbox</b>
+          </span>
+        </div>
+        <div class="map-row wires one"><i class="vl" data-b="l" data-wire="core"><b></b></i></div>
+        <span class="wf mnode wide soft" data-b="r" data-node="k8s">Kubernetes<small>dev and production · pipelines, scan gates, quotas, network policies</small></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="work" aria-labelledby="work-h">
+    <SecHead no="01" title="Selected work" id="work-h" note={`All ${projects.length} projects ↗`} href="/work" />
+    {featured.map((p, i) => <Case project={p} index={i} />)}
+    <a class="more" href="/work" data-b="r" data-swarm>
+      <span data-b="t">PolyX SDK, Alara Space, Alara Plan and ODIN</span>
+      <span data-b="t">See all work ↗</span>
+    </a>
+  </section>
+
+  <section class="sec" id="numbers" aria-labelledby="num-h">
+    <SecHead no="02" title="By the numbers" id="num-h" note="Counted, not described" />
+    <div class="nums">
+      {
+        numbers.map((x, i) => (
+          <div class="num" data-b={i === 0 ? 'r' : 'd'}>
+            <p class="num-n" data-b="t" data-count>{x.n}</p>
+            <p class="num-l" data-b="t">{x.label}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="sec" id="about" aria-labelledby="about-h">
+    <SecHead no="03" title="About" id="about-h" note="Experience and process ↗" href="/about" />
+    <div class="split">
+      <p class="lead" data-b="t">
+        I like the unglamorous end of software. <em>Tenant isolation, session bugs that only appear under load, pipelines that refuse to ship a vulnerable image.</em>
+      </p>
+      <div class="about-copy">
+        <p data-b="t">
+          For three and a half years I have built and run the platform a suite of AI products stands on. I wrote the
+          identity provider and its SDK, took four products to production on Kubernetes, and I still ship their releases
+          and answer when something breaks.
+        </p>
+        <p data-b="t">
+          Most of the typing is done by agents now. We work as architects: people set the problem, the constraints and
+          the acceptance criteria, agents write the tests and the code, and a person signs off.
+        </p>
+        <a class="btn" href="/about" data-b="r" data-swarm data-magnet>More about me <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="writing" aria-labelledby="writing-h">
+    <SecHead no="04" title="Writing" id="writing-h" note="All writing ↗" href="/blog" />
+    <PostList posts={posts} />
+  </section>
+
+  <Contact />
+</Base>

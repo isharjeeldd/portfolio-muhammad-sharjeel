@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import Case from '../components/Case.astro';
+import SecHead from '../components/SecHead.astro';
+import Contact from '../components/Contact.astro';
+import { site, ordered as projects } from '../data/site';
+
+const description = 'Six projects: the PolyX identity platform and SDK, Alara Code, Alara Space, Alara Plan and ODIN. What each one is, what I built, and a glimpse of its interface.';
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    url: `${site.url}/work`,
+    name: `Work · ${site.shortName}`,
+    description,
+    author: { '@id': `${site.url}/#person` },
+    hasPart: projects.map((p) => ({ '@type': 'CreativeWork', name: p.name, description: p.summary, url: `${site.url}/work#${p.slug}` })),
+  },
+];
+---
+
+<Base title="Work" description={description} jsonLd={jsonLd}>
+  <section class="page-head">
+    <h1 data-b="t">Work <em>on platforms, and the products that stand on them.</em></h1>
+    <p class="lede" data-b="t">
+      Each figure is a redrawn glimpse of the real interface. No screenshots and no customer data.
+    </p>
+  </section>
+  <section class="sec" aria-labelledby="all-h">
+    <SecHead no="01" title="All projects" id="all-h" note={`2023 to 2026 · ${projects.length} projects`} />
+    {projects.map((p, i) => <Case project={p} index={i} />)}
+  </section>
+  <Contact />
+</Base>

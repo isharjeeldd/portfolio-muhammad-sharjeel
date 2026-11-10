@@ -1,0 +1,39 @@
+---
+import { readingTime, formatDate, type Post } from '../lib/posts';
+interface Props {
+  posts: Post[];
+}
+const { posts } = Astro.props;
+const [lead, ...rest] = posts;
+---
+
+<ul class="posts">
+  {
+    lead && (
+      <li>
+        <a class="post-lead" href={`/blog/${lead.id}`} data-b="r" data-swarm>
+          <span class="meta" data-b="t">
+            <time datetime={lead.data.date.toISOString()}>{formatDate(lead.data.date)}</time> · {readingTime(lead.body)}
+          </span>
+          <span class="p-title" data-b="t">{lead.data.title}</span>
+          <span class="p-desc" data-b="t">{lead.data.description}</span>
+          <span class="p-go" aria-hidden="true">↗</span>
+        </a>
+      </li>
+    )
+  }
+  {
+    rest.map((post, i) => (
+      <li>
+        <a class="post-row" href={`/blog/${post.id}`} data-b={i === 0 ? 'r' : 'd'} data-swarm>
+          <span class="meta">
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+          </span>
+          <span class="pr-title" data-b="t">{post.data.title}</span>
+          <span class="meta">{readingTime(post.body)}</span>
+          <span class="pr-go" aria-hidden="true">↗</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

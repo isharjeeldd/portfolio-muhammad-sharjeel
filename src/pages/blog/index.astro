@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import { site } from '../../data/site';
+import PostList from '../../components/PostList.astro';
+import { getPosts } from '../../lib/posts';
+
+const posts = await getPosts();
+const description = 'Notes on platform engineering, multi-tenant systems and building software with AI agents.';
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    '@id': `${site.url}/blog#blog`,
+    url: `${site.url}/blog`,
+    name: `${site.shortName}, writing`,
+    description,
+    author: { '@id': `${site.url}/#person` },
+    blogPost: posts.map((p) => ({
+      '@type': 'BlogPosting',
+      headline: p.data.title,
+      url: `${site.url}/blog/${p.id}`,
+      datePublished: p.data.date.toISOString(),
+    })),
+  },
+];
+---
+
+<Base title="Writing" description={description} jsonLd={jsonLd}>
+  <section class="page-head">
+    <h1 data-b="t">Writing <em>about platforms and the agents that build them.</em></h1>
+    <p class="lede" data-b="t">{description}</p>
+  </section>
+
+  <section class="sec" aria-label="Posts">
+    <header class="sec-head">
+      <span class="sec-no" data-b="t">01</span>
+      <h2 data-b="t">Posts</h2>
+      <span class="sec-note" data-b="t">{posts.length === 1 ? '1 post' : `${posts.length} posts`}</span>
+    </header>
+    <hr data-b="l" />
+    <PostList posts={posts} />
+  </section>
+</Base>

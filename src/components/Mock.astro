@@ -1,0 +1,302 @@
+---
+// A glimpse of each product's real key screen, redrawn in monochrome.
+// No screenshots and no real data. The swarm builds each one; motion.ts
+// then brings it to life.
+interface Props {
+  slug: string;
+  fig: string;
+}
+const { slug, fig } = Astro.props;
+
+const titles: Record<string, string> = {
+  polyx: 'PolyX · Roles & Permissions',
+  'polyx-sdk': 'Your app · sign-in with @poly-x/react',
+  'alara-code': 'Alara Code · Pipeline',
+  'alara-space': 'Alara Space · Deploy checklist',
+  'alara-plan': 'Alara Plan · Board',
+  odin: 'ODIN · Conversations',
+};
+
+const modules = ['Wiki', 'Planner', 'Delivery', 'Billing'];
+const grants = [
+  [1, 1, 1, 0],
+  [1, 1, 0, 0],
+  [0, 1, 0, 0],
+  [0, 0, 0, 0],
+];
+const steps = [
+  ['/rfp', 'Request for Proposal'],
+  ['/scope', 'Project Scope'],
+  ['/srs', 'Requirements Spec'],
+  ['/tad', 'Technical Architecture'],
+  ['/sds', 'System Design Spec'],
+  ['/api', 'API Contract'],
+  ['/sts', 'System Test Spec'],
+  ['/plan', 'Delivery Plan'],
+  ['/proposal', 'Client Proposal'],
+];
+const board = [
+  { name: 'To Do', cards: [['story', 72], ['bug', 54]] },
+  { name: 'In Progress', cards: [['story', 64]] },
+  { name: 'QA', cards: [['epic', 58]] },
+  { name: 'Done', cards: [['story', 70], ['bug', 46]] },
+] as const;
+---
+
+<figure class="mock" data-mock={slug}>
+  <div class="mock-win" data-b="r">
+    <div class="mock-bar">
+      <i></i><i></i><i></i>
+      <span data-b="t">{titles[slug]}</span>
+    </div>
+
+    {
+      slug === 'polyx' && (
+        <div class="mock-body m-app">
+          <nav class="m-side" data-b="r">
+            <b>PolyX</b>
+            <span>Dashboard</span>
+            <span>Organizations</span>
+            <span>Users</span>
+            <span>Modules</span>
+            <span class="on">Roles & Permissions</span>
+            <span>Teams</span>
+            <span>Audit trail</span>
+          </nav>
+          <div class="m-main">
+            <div class="m-head">
+              <strong data-b="t">Roles & Permissions</strong>
+              <span class="m-btn fill" data-b="r" data-press>Add permission</span>
+            </div>
+            <div class="m-field" data-b="r">
+              <small>Role name</small>
+              <span>Workspace Admin</span>
+            </div>
+            <div class="m-matrix" data-b="r">
+              <div class="m-row head">
+                <span>Modules</span>
+                <span>Create</span>
+                <span>Read</span>
+                <span>Update</span>
+                <span>Delete</span>
+              </div>
+              {modules.map((m, r) => (
+                <div class="m-row">
+                  <span>{m}</span>
+                  {grants[r].map((g) => (
+                    <span>
+                      <i class:list={['cb', g && 'on']} data-cb />
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      slug === 'polyx-sdk' && (
+        <div class="mock-body m-split">
+          <div class="m-codepane" data-b="r">
+            <small>app/sign-in/page.tsx</small>
+            <pre><code data-b="t">{`import { SignIn } from '@poly-x/react'
+
+export default function Page() {
+  return <SignIn />
+}`}</code></pre>
+            <small>What the browser holds</small>
+            <ul class="m-facts">
+              <li>
+                <span>Access token</span>
+                <b>none</b>
+              </li>
+              <li>
+                <span>Session cookie</span>
+                <b data-cookie>not set</b>
+              </li>
+            </ul>
+          </div>
+          <div class="m-preview" data-b="r">
+            <div class="m-signin" data-signin>
+              <i class="m-logo" />
+              <strong>Sign in</strong>
+              <span class="m-input" data-b="r">
+                <span data-email />
+                <i class="m-caret" />
+              </span>
+              <span class="m-input" data-b="d">
+                <span data-pass />
+              </span>
+              <span class="m-btn fill wide" data-b="r" data-press>Continue</span>
+            </div>
+            <div class="m-signed" data-signed>
+              <i class="m-avatar">S</i>
+              <strong>Signed in</strong>
+              <small>The session lives on the app server.</small>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      slug === 'alara-code' && (
+        <div class="mock-body m-pipe">
+          <nav class="m-steps" data-b="r">
+            <small>Steps</small>
+            {steps.map(([cmd, name], i) => (
+              <span class:list={['m-step', i < 3 && 'done', i === 3 && 'on']} data-step>
+                <i />
+                <code>{cmd}</code>
+                <em>{name}</em>
+              </span>
+            ))}
+          </nav>
+          <div class="m-chat" data-b="r">
+            <small>Pipeline chat</small>
+            <p class="m-msg">
+              <b data-stepname>Technical Architecture</b> <span data-status>Writing</span>
+            </p>
+            <div class="m-actions" data-actions>
+              <span class="m-btn">Request changes</span>
+              <span class="m-btn fill" data-press>Continue</span>
+            </div>
+            <p class="m-ok" data-ok>Approved.</p>
+          </div>
+          <div class="m-doc" data-b="r">
+            <small>Document</small>
+            <span class="bar thick" style="width:58%" data-line />
+            <span class="bar" style="width:94%" data-line />
+            <span class="bar" style="width:86%" data-line />
+            <span class="bar" style="width:90%" data-line />
+            <span class="bar" style="width:42%" data-line />
+            <span class="bar" style="width:88%" data-line />
+            <span class="bar" style="width:76%" data-line />
+            <span class="bar" style="width:60%" data-line />
+          </div>
+        </div>
+      )
+    }
+
+    {
+      slug === 'alara-space' && (
+        <div class="mock-body m-wiki">
+          <nav class="m-side" data-b="r">
+            <span class="m-search">Search or jump to</span>
+            <span>Recent</span>
+            <span>Starred</span>
+            <small>Pages</small>
+            <span>Engineering</span>
+            <span class="in">Runbooks</span>
+            <span class="in2 on">Deploy checklist</span>
+            <span class="in2">Rollback</span>
+            <span>Onboarding</span>
+          </nav>
+          <div class="m-main">
+            <div class="m-head">
+              <small data-b="t">Engineering / Runbooks</small>
+              <span>
+                <span class="m-btn" data-b="r">Share</span>
+              </span>
+            </div>
+            <strong class="m-title" data-b="t">Deploy checklist</strong>
+            <ul class="m-todo" data-b="r">
+              <li><i class="cb on" />Image scanned, no HIGH or CRITICAL</li>
+              <li><i class="cb on" />Migrations applied on dev</li>
+              <li><i class="cb" />Approval recorded for production</li>
+              <li class="m-new" data-newline>
+                <i class="cb" />
+                <span data-agent-text />
+                <b class="m-tag">agent</b>
+              </li>
+            </ul>
+          </div>
+          <aside class="m-rail" data-b="r">
+            <div class="m-tabs">
+              <span>Comments</span>
+              <span>Files</span>
+              <span class="on">History</span>
+            </div>
+            <span class="m-ver" data-newver>v4 · saved by agent</span>
+            <span class="m-ver">v3 · saved</span>
+            <span class="m-ver">v2 · saved</span>
+            <span class="m-ver">v1 · created</span>
+          </aside>
+        </div>
+      )
+    }
+
+    {
+      slug === 'alara-plan' && (
+        <div class="mock-body m-app">
+          <nav class="m-side" data-b="r">
+            <b>Alara Plan</b>
+            <span>Dashboard</span>
+            <span class="on">Projects</span>
+            <span>Timelines</span>
+            <span>Meetings</span>
+            <span>Time</span>
+            <span>Settings</span>
+          </nav>
+          <div class="m-main">
+            <div class="m-tabs" data-b="r">
+              <span class="on">Board</span>
+              <span>Backlog</span>
+              <span>Timeline</span>
+              <span>Calendar</span>
+            </div>
+            <div class="m-board">
+              {board.map((col, c) => (
+                <div class="m-col" data-col data-b={c === 0 ? 'r' : 'd'}>
+                  <small>{col.name}</small>
+                  {col.cards.map(([type, w], i) => (
+                    <span class="m-card" data-mover={c === 0 && i === 0 ? '' : undefined}>
+                      <b class="m-tag">{type}</b>
+                      <span class="bar thick" style={`width:${w}%`} />
+                      <span class="m-cardmeta">
+                        <em>medium</em>
+                        <em>Nov 14</em>
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      slug === 'odin' && (
+        <div class="mock-body m-wiki">
+          <nav class="m-side" data-b="r">
+            <small>Channels</small>
+            <span class="on">WhatsApp</span>
+            <span>Web chat</span>
+            <span>Email</span>
+            <small>Journeys</small>
+            <span>Order updates</span>
+            <span>Win-back</span>
+          </nav>
+          <div class="m-main m-thread" data-b="r">
+            <span class="m-bubble" data-bubble>Where is my order?</span>
+            <span class="m-bubble me" data-bubble>It is out for delivery and arrives today.</span>
+            <span class="m-bubble" data-bubble>Great, thank you!</span>
+            <span class="m-typing" data-typing><i /><i /><i /></span>
+          </div>
+          <aside class="m-rail" data-b="r">
+            <small>Sentiment</small>
+            <strong data-sentiment>neutral</strong>
+            <span class="m-meter"><i data-meter /></span>
+            <small>Delivered</small>
+            <span class="m-ver">3 of 3 messages</span>
+          </aside>
+        </div>
+      )
+    }
+  </div>
+  <figcaption data-b="t">{fig}</figcaption>
+</figure>

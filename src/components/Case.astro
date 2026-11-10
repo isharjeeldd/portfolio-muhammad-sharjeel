@@ -1,0 +1,53 @@
+---
+import Mock from './Mock.astro';
+import type { Project } from '../data/site';
+
+interface Props {
+  project: Project;
+  index: number;
+}
+const { project: p, index } = Astro.props;
+
+const no = String(index + 1).padStart(2, '0');
+const figs: Record<string, string> = {
+  polyx: 'permissions are granted per module, per tenant',
+  'polyx-sdk': 'five lines of code, and the token never reaches the browser',
+  'alara-code': 'every document waits for a human before the next one starts',
+  'alara-space': 'an agent edits the wiki as the user it acts for',
+  'alara-plan': 'one board per tenant',
+  odin: 'conversations across channels, in real time',
+};
+---
+
+<article class="case" id={p.slug}>
+  <div class="case-info">
+    <p class="case-no" data-b="t">P. {no}</p>
+    <h3 data-b="t">{p.name}</h3>
+    <p class="case-sum" data-b="t">{p.summary}</p>
+    <dl class="case-meta" data-b="r">
+      <dt>Role</dt>
+      <dd>{p.role}</dd>
+      <dt>When</dt>
+      <dd>{p.period}</dd>
+      <dt>Stack</dt>
+      <dd>{p.stack}</dd>
+      {
+        p.link && (
+          <>
+            <dt>Link</dt>
+            <dd>
+              <a href={p.link.href}>{p.link.label} ↗</a>
+            </dd>
+          </>
+        )
+      }
+    </dl>
+  </div>
+  <div class="case-main">
+    <Mock slug={p.slug} fig={`Fig. ${no} · ${figs[p.slug]}`} />
+    <ul class="case-points">
+      {p.points.map((pt) => <li data-b="t">{pt}</li>)}
+    </ul>
+  </div>
+  <hr data-b="l" />
+</article>

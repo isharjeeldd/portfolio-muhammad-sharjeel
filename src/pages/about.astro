@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+import SecHead from '../components/SecHead.astro';
+import Contact from '../components/Contact.astro';
+import { site, experience, stack } from '../data/site';
+
+const description = 'Muhammad Sharjeel is a Senior Software Engineer at wAI Industries in Islamabad. Experience, how I work with AI agents, and the stack I use.';
+const stages = [
+  { k: '01', t: 'Product discovery', n: 'What and why', d: 'One living document for what the customer sees: screens, responses, status changes and edge cases. It never says how we build it.' },
+  { k: '02', t: 'Tech discovery', n: 'How, with options', d: 'One document per component: the problem, the options weighed, a recommendation and the open questions. No feature is written until it is complete.' },
+  { k: '03', t: 'ADRs and architecture', n: 'Decisions on record', d: 'One decision per record, never edited once accepted. The architecture document always describes what is, and changes in the same pull request as the code.' },
+  { k: '04', t: 'Implementation', n: 'Features and spikes', d: 'Every feature has acceptance criteria and test cases before anyone starts. Spikes answer one question in a fixed time, and a person signs the result.' },
+  { k: '05', t: 'Release', n: 'Ship and freeze', d: 'A release document generated from the work itself, a health check of the repository, then the merge.' },
+];
+const status = [
+  { t: 'draft', d: 'Plan being written' },
+  { t: 'ready', d: 'Tests defined' },
+  { t: 'in-progress', d: 'On a feature branch' },
+  { t: 'review', d: 'Pull request open' },
+  { t: 'done', d: 'Merged' },
+];
+const own = [
+  ['Naming the problem clearly', 'Reading the brief and the rules'],
+  ['Writing acceptance criteria', 'Writing the tests first'],
+  ['Picking between options', 'Implementing against the criteria'],
+  ['Signing off on experiments', 'Running checks and opening the pull request'],
+  ['Updating the rules when reality moves', 'Fixing review comments'],
+  ['Reviewing what the agent ships', 'Asking when the rules do not cover it'],
+];
+const rails = [
+  { t: 'AGENTS.md', d: 'Standing orders at the root of the repository and in every folder that needs its own. People and agents read the same file.' },
+  { t: 'Skills', d: 'Rulebooks that load themselves when an agent touches a matching folder, plus a few commands that move a step forward.' },
+  { t: 'Connectors', d: 'Source control, pipelines and cloud state, so an agent can open a pull request and read a build. Read-only by default.' },
+  { t: 'Allowlist', d: 'Routine, low-risk commands run without asking. Anything destructive still needs a person.' },
+];
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    url: `${site.url}/about`,
+    name: `About · ${site.shortName}`,
+    description,
+    mainEntity: { '@id': `${site.url}/#person` },
+  },
+];
+---
+
+<Base title="About" description={description} jsonLd={jsonLd}>
+  <section class="page-head">
+    <h1 data-b="t">About <em>a platform engineer who still answers the pager.</em></h1>
+    <p class="lede" data-b="t">
+      I am Muhammad Sharjeel, a {site.role} at {site.company} in {site.location}. Five years in software, three and a
+      half of them building and running multi-tenant platforms.
+    </p>
+  </section>
+
+  <section class="sec" id="experience" aria-labelledby="exp-h">
+    <SecHead no="01" title="Experience" id="exp-h" note="2019 to now" />
+    <div class="split">
+      <p class="lead" data-b="t">
+        I like the unglamorous end of software. <em>Tenant isolation, session bugs that only appear under load, pipelines that refuse to ship a vulnerable image.</em>
+      </p>
+      <ol class="xp">
+        {
+          experience.map((e, i) => (
+            <li data-b={i === 0 ? 'r' : 'd'}>
+              <p class="xp-when" data-b="t">{e.period}</p>
+              <div>
+                <h3 data-b="t">{e.role}</h3>
+                <p class="xp-place" data-b="t">{e.place}</p>
+                <p class="xp-note" data-b="t">{e.note}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="process" aria-labelledby="process-h">
+    <SecHead no="02" title="How I work" id="process-h" note="One workflow, every engineer" />
+    <div class="split">
+      <div>
+        <p class="lead" data-b="t">Humans are architects. <em>Agents are engineers.</em></p>
+        <p class="lead-note" data-b="t">
+          When an agent can write the implementation faster than any one engineer, the rare skill is no longer typing the
+          change. It is deciding what to build, in what order, with what guarantees. This is the workflow my team
+          follows on every repository.
+        </p>
+      </div>
+      <ol class="steps-list">
+        {
+          stages.map((s, i) => (
+            <li data-b={i === 0 ? 'r' : 'd'}>
+              <span class="step-k" data-b="t">{s.k}</span>
+              <div>
+                <h3 data-b="t">{s.t}</h3>
+                <p class="step-n" data-b="t">{s.n}</p>
+              </div>
+              <p data-b="t">{s.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="gate" data-gate>
+      <p class="meta" data-b="t">Fig. 01 · the life of one feature. Test cases gate the word “ready”.</p>
+      <ol class="gate-rail">
+        {
+          status.map((x, i) => (
+            <li data-b={i === 0 ? 'r' : 'd'} data-status-cell class:list={[i === 1 && 'is-gate']}>
+              <strong data-b="t">{x.t}</strong>
+              <span data-b="t">{x.d}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <i class="gate-token" data-token aria-hidden="true"></i>
+    </div>
+
+    <div class="owns">
+      <div class="owns-col" data-b="r">
+        <p class="meta">I own</p>
+        <h3>The decisions</h3>
+        <ul>{own.map(([a]) => <li>{a}</li>)}</ul>
+      </div>
+      <div class="owns-col fill" data-b="d">
+        <p class="meta">The agent owns</p>
+        <h3>The execution</h3>
+        <ul>{own.map(([, b]) => <li>{b}</li>)}</ul>
+      </div>
+    </div>
+
+    <div class="rails">
+      {
+        rails.map((r, i) => (
+          <div class="rail" data-b={i === 0 ? 'r' : 'd'}>
+            <h3 data-b="t">{r.t}</h3>
+            <p data-b="t">{r.d}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="sec" id="stack" aria-labelledby="stack-h">
+    <SecHead no="03" title="Stack" id="stack-h" note="What I reach for" />
+    <div class="split">
+      <p class="lead" data-b="t">Boring tools, <em>used on purpose.</em></p>
+      <dl class="kv">
+        {
+          stack.map((s) => (
+            <>
+              <dt data-b="t">{s.label}</dt>
+              <dd data-b="t">{s.value}</dd>
+            </>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+  <Contact />
+</Base>

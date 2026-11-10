@@ -1,0 +1,19 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <div class="upwork" data-b="r">
+    <div>
+      <p class="meta" data-b="t">Freelance</p>
+      <p class="upwork-line" data-b="t">Let’s work together on Upwork. <em>For platform, identity and full-stack work with a clear scope.</em></p>
+    </div>
+    <a class="btn invert" href={site.upwork} data-b="r" data-swarm data-magnet>Open my Upwork profile <span aria-hidden="true">↗</span></a>
+  </div>
+  <hr data-b="l" />
+  <div class="contact-row">
+    <h2 id="contact-h" data-b="t">Write to me</h2>
+    <a class="mail" href={`mailto:${site.email}`} data-b="t" data-swarm>{site.email}</a>
+    <span class="go" aria-hidden="true" data-b="t">↗</span>
+  </div>
+</section>
