@@ -2,7 +2,8 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
-import { site } from '../data/site';
+import { site, ordered } from '../data/site';
+import { getPosts, readingTime } from '../lib/posts';
 
 interface Props {
   title?: string;
@@ -28,10 +29,59 @@ const {
   jsonLd = [],
 } = Astro.props;
 
-const fullTitle = title ? `${title} · ${site.shortName}` : site.title;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
+// Search results cut titles near 60 characters and descriptions near 160.
+const suffixed = title ? `${title} · ${site.shortName}` : site.title;
+const fullTitle = title && type === 'article' && suffixed.length > 60 ? title : suffixed;
+const clip = (text: string, max = 158) => {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:.]+$/, '')}…`;
+};
+const metaDescription = clip(description);
+const cleanPath = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/(.)\/$/, '$1');
+const canonical = new URL(cleanPath, Astro.site).href;
 const imageUrl = new URL(image, Astro.site).href;
-const path = Astro.url.pathname;
+const path = cleanPath;
+const posts = bare ? [] : await getPosts();
+const palette = [
+  {
+    name: 'Pages',
+    items: [
+      { label: 'Home', href: '/', hint: 'Page', k: 'start index' },
+      { label: 'Work', href: '/work', hint: 'Page', k: 'projects portfolio' },
+      { label: 'About', href: '/about', hint: 'Page', k: 'experience how i work stack cv' },
+      { label: 'Writing', href: '/blog', hint: 'Page', k: 'blog posts articles' },
+      { label: 'Get in touch', href: '/#contact', hint: 'Section', k: 'contact hire email' },
+    ],
+  },
+  {
+    name: 'Projects',
+    items: ordered.map((p) => ({ label: p.name, href: `/work#${p.slug}`, hint: 'Project', k: String(p.stack) })),
+  },
+  {
+    name: 'Writing',
+    items: posts.map((p) => ({ label: p.data.title, href: `/blog/${p.id}`, hint: readingTime(p.body), k: p.data.tags.join(' ') })),
+  },
+  {
+    name: 'Actions',
+    items: [
+      { label: 'Switch theme', act: 'theme', hint: 'Action', k: 'dark light mode' },
+      { label: 'Switch sound on or off', act: 'sound', hint: 'Action', k: 'audio mute volume' },
+      { label: 'Switch the swarm on or off', act: 'swarm', hint: 'Action', k: 'cursors animation motion' },
+      { label: 'Replay or skip the build', act: 'build', hint: 'Action', k: 'again restart' },
+      { label: 'Copy email address', act: 'email', hint: 'Action', k: 'contact mail' },
+    ],
+  },
+  {
+    name: 'Elsewhere',
+    items: [
+      { label: 'GitHub', href: site.github, hint: 'Opens in a new tab', k: 'code source' },
+      { label: 'LinkedIn', href: site.linkedin, hint: 'Opens in a new tab', k: 'profile' },
+      { label: 'Upwork', href: site.upwork, hint: 'Opens in a new tab', k: 'hire freelance' },
+    ],
+  },
+];
+let palId = 0;
 const nav = [
   { href: '/work', label: 'Work' },
   { href: '/about', label: 'About' },
@@ -45,7 +95,7 @@ const nav = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <meta name="author" content={site.name} />
     <meta name="keywords" content={site.keywords.join(', ')} />
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
@@ -58,9 +108,9 @@ const nav = [
 
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content={site.shortName} />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content="en_GB" />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={imageUrl} />
     <meta property="og:image:width" content="1200" />
@@ -72,7 +122,7 @@ const nav = [
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={imageUrl} />
 
     {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
@@ -105,14 +155,20 @@ const nav = [
         } catch {}
         if (!bare && !off && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
           d.classList.add('building');
-          // If the engine never arrives, show the page anyway.
+          // First page of a visit opens behind the loader. Crawlers skip it.
+          let entered = true;
+          try {
+            entered = sessionStorage.getItem('entered') === '1';
+          } catch {}
+          if (!entered && !/bot|crawl|spider|lighthouse|headless/i.test(navigator.userAgent)) d.classList.add('intro');
+          // If the scripts never arrive, show the page anyway.
           setTimeout(() => {
-            if (!window.__swarm) d.classList.remove('building');
+            if (!window.__swarm || !window.__shell) d.classList.remove('building', 'intro');
           }, 3500);
         }
       })();
     </script>
-    <noscript><style>html.building [data-b], html.building .prose > * { visibility: visible !important; }</style></noscript>
+    <noscript><style>.dock [data-pal-open], .dock [data-sound-toggle] { display: none; } html.building [data-b], html.building .prose > * { visibility: visible !important; }</style></noscript>
   </head>
   <body>
     {
@@ -120,6 +176,23 @@ const nav = [
         <slot />
       ) : (
         <>
+          <div class="intro-el" data-intro role="dialog" aria-modal="true" aria-labelledby="intro-t">
+            <p class="intro-meta">
+              <span>{site.shortName}</span>
+              <span>{site.role}</span>
+            </p>
+            <div class="intro-mid">
+              <p class="intro-n" aria-hidden="true"><span data-intro-n>000</span></p>
+              <p class="intro-t" id="intro-t" data-intro-line aria-live="polite">Loading the swarm</p>
+              <div class="intro-acts" data-intro-acts>
+                <button type="button" class="btn" data-intro-enter="on" data-swarm disabled>
+                  Enter with sound <span aria-hidden="true">↗</span>
+                </button>
+                <button type="button" class="intro-quiet" data-intro-enter="off" data-swarm disabled>Enter without sound</button>
+              </div>
+            </div>
+            <p class="intro-foot">The sound is made in your browser and can be switched off from the corner at any time.</p>
+          </div>
           <a class="skip" href="#main">Skip to content</a>
           <div class="guide guide-l" data-b="g" aria-hidden="true" />
           <div class="guide guide-r" data-b="g" aria-hidden="true" />
@@ -183,12 +256,61 @@ const nav = [
               <p class="legal" data-b="t">© {new Date().getFullYear()} {site.name} · {site.location}</p>
             </footer>
           </div>
-          <div class="dock" role="group" aria-label="Site controls">
+          <aside class="dock" aria-label="Site controls">
             <span class="dock-label" data-hud-label hidden></span>
+            <button type="button" data-pal-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K">
+              Menu <kbd>⌘K</kbd>
+            </button>
             <button type="button" data-hud-btn>Skip</button>
+            <button type="button" data-sound-toggle aria-pressed="false">Sound off</button>
             <button type="button" data-swarm-toggle aria-pressed="true">Swarm on</button>
             <button type="button" data-theme-toggle>Theme</button>
-          </div>
+          </aside>
+          <dialog class="pal" data-pal data-email={site.email} aria-label="Command menu">
+            <div class="pal-top">
+              <input
+                type="text"
+                data-pal-input
+                placeholder="Search pages, projects, posts and actions"
+                autocomplete="off"
+                spellcheck="false"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="pal-list"
+                aria-autocomplete="list"
+                aria-label="Search the site"
+              />
+              <kbd>esc</kbd>
+            </div>
+            <div class="pal-list" id="pal-list" role="listbox" aria-label="Results" data-pal-list>
+              {palette.map((g) => (
+                <div role="group" aria-label={g.name} data-pal-group>
+                  <p class="pal-h" aria-hidden="true">
+                    {g.name}
+                  </p>
+                  {g.items.map((i) =>
+                    'href' in i ? (
+                      <a role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} href={i.href} data-k={i.k}>
+                        <span>{i.label}</span>
+                        <small>{i.hint}</small>
+                      </a>
+                    ) : (
+                      <button type="button" role="option" aria-selected="false" tabindex="-1" id={`pal-${palId++}`} data-act={i.act} data-k={i.k}>
+                        <span>{i.label}</span>
+                        <small>{i.hint}</small>
+                      </button>
+                    ),
+                  )}
+                </div>
+              ))}
+            </div>
+            <p class="pal-empty" data-pal-empty hidden>Nothing matches that.</p>
+            <p class="pal-foot" aria-hidden="true">
+              <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
+              <span><kbd>↵</kbd> open</span>
+              <span><kbd>esc</kbd> close</span>
+            </p>
+          </dialog>
           <canvas id="swarm" aria-hidden="true" />
         </>
       )
@@ -211,6 +333,7 @@ const nav = [
         a.rel = (a.rel ? a.rel + ' ' : '') + 'noopener noreferrer';
       });
     </script>
+    {!bare && <script src="../scripts/shell.ts" />}
     {!bare && <script src="../scripts/swarm.ts" />}
     {!bare && <script src="../scripts/motion.ts" />}
   </body>

@@ -4,7 +4,7 @@ export const site = {
   role: 'Senior Software Engineer',
   company: 'wAI Industries',
   location: 'Islamabad, Pakistan',
-  url: 'https://sharjeelafzaal.com',
+  url: 'https://www.sharjeelafzaal.com',
   email: 'sharjeelafzaal123@gmail.com',
   github: 'https://github.com/isharjeeldd',
   linkedin: 'https://www.linkedin.com/in/muhammad-sharjeel-254a48108/',

@@ -1,3 +1,4 @@
+import { sfx } from './sound';
 // Swarm build engine.
 //
 // The page starts as a blank canvas. As you scroll, a flock of cursors builds
@@ -198,6 +199,7 @@ function show(task: Task, fade = true) {
 function* rectJob(a: Agent, task: Task): Generator<void, void, void> {
   yield* drag(a, pageBox(task.el));
   show(task);
+  sfx.pop();
   yield* wait(0.14);
 }
 
@@ -238,11 +240,14 @@ function* textJob(a: Agent, task: Task): Generator<void, void, void> {
     const next = lines[i + 1];
     const lb = next ? ln.b - Math.max(0, ln.b - next.t) * 0.42 - box.t : box.b - box.t + M;
     let x = ln.l;
+    let lastQ = -1;
     while (x < ln.r) {
       yield;
       x = Math.min(ln.r, x + speed * tick);
       const qx = Math.min(ln.r, ln.l + Math.ceil((x - ln.l) / stepW) * stepW);
       const cx = qx - box.l + 1;
+      if (qx !== lastQ) sfx.key();
+      lastQ = qx;
       if (clip) {
         el.style.clipPath = `polygon(${-M}px ${-M}px, ${w + M}px ${-M}px, ${w + M}px ${lt}px, ${cx}px ${lt}px, ${cx}px ${lb}px, ${-M}px ${lb}px)`;
       }
@@ -267,6 +272,7 @@ function* lineJob(a: Agent, task: Task): Generator<void, void, void> {
   yield* wait(0.06);
   const fx: Fx = { k: 'line', x1, y1, x2: x1, y2: y1 };
   a.fx = [fx];
+  sfx.stroke();
   const dur = clamp(Math.hypot(x2 - x1, y2 - y1) / 2400, 0.18, 0.5);
   let t = 0;
   while (t < 1) {
@@ -290,6 +296,7 @@ function* guideJob(a: Agent, task: Task): Generator<void, void, void> {
   yield* wait(0.08);
   const fx: Fx = { k: 'guide', x: a.x };
   a.fx = [fx];
+  sfx.stroke();
   const x0 = a.x;
   const dur = clamp(Math.abs(tx - x0) / 1800, 0.25, 0.6);
   let t = 0;
@@ -341,6 +348,7 @@ function* dupJob(a: Agent, task: Task): Generator<void, void, void> {
     a.y = fx.y + gy;
   }
   show(task);
+  sfx.pop();
   yield* wait(0.1);
 }
 
@@ -394,6 +402,8 @@ function complete(t: Task, fade: boolean) {
 }
 
 function schedule() {
+  // The loader is still up: nothing is built until the visitor enters.
+  if (root.classList.contains('intro')) return;
   const viewBottom = sy + H;
   let backlog = 0;
   for (const t of tasks) {
@@ -451,6 +461,7 @@ function finish() {
   }
   root.classList.remove('building');
   updateHud();
+  sfx.done();
   document.dispatchEvent(new CustomEvent('swarm:done'));
 }
 
@@ -889,11 +900,14 @@ function init() {
   });
   document.addEventListener('pointerover', (e) => {
     if (e.pointerType !== 'mouse') return;
-    perch = (e.target as Element | null)?.closest?.('[data-swarm]') ?? null;
+    const next = (e.target as Element | null)?.closest?.('[data-swarm]') ?? null;
+    if (next && next !== perch) sfx.hover();
+    perch = next;
   });
   window.addEventListener(
     'pointerdown',
     (e) => {
+      sfx.click();
       for (const a of agents) {
         if (a.job) continue;
         const dx = a.x - sx - e.clientX;

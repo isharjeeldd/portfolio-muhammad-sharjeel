@@ -64,14 +64,27 @@ Blog posts carry no cover images.
 - Each product glimpse animates the one action that product exists for. One idea per figure.
 - Respect `prefers-reduced-motion`: no loops, no build.
 
-## 8. Copy
+## 8. Loader, sound and the command menu
+
+- The loader shows once per visit, on the first page only, and never to crawlers. It must always offer a silent way in.
+- Sound is off until the visitor chooses it. All sounds are synthesised in `src/scripts/sound.ts`. No audio files, no music, nothing that loops.
+- Every new page, project or post must be reachable from the command menu (Ctrl or Cmd + K). Pages and actions are listed in `Base.astro`; projects and posts are added automatically.
+- Mock-ups are pictures to a screen reader (`role="img"`). Do not use `nav`, `aside` or other landmark tags inside them.
+
+## 9. Search engines
+
+- The canonical address is `https://www.sharjeelafzaal.com`, with no trailing slash.
+- If a page is renamed or removed, add a redirect in both `astro.config.mjs` and `vercel.json`.
+- Titles aim for 60 characters, descriptions for 160. `Base.astro` trims longer ones.
+
+## 10. Copy
 
 - Plain words, short sentences, British spelling.
 - No em dashes. No "supercharge", "seamless", "world-class". No slogans built on a fake contrast.
 - Numbers must be true and sourced. If a number cannot be confirmed, leave it out.
 - Link text says where it goes. External links open in a new tab (handled in `Base.astro`).
 
-## 9. Before finishing a change
+## 11. Before finishing a change
 
 1. `npx astro build` passes.
 2. Check the page at 1440px and 390px, light and dark.

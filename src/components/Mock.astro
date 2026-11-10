@@ -44,7 +44,7 @@ const board = [
 ---
 
 <figure class="mock" data-mock={slug}>
-  <div class="mock-win" data-b="r">
+  <div class="mock-win" data-b="r" role="img" aria-label={`Redrawn interface: ${titles[slug]}`}>
     <div class="mock-bar">
       <i></i><i></i><i></i>
       <span data-b="t">{titles[slug]}</span>
@@ -53,7 +53,7 @@ const board = [
     {
       slug === 'polyx' && (
         <div class="mock-body m-app">
-          <nav class="m-side" data-b="r">
+          <div class="m-side" data-b="r">
             <b>PolyX</b>
             <span>Dashboard</span>
             <span>Organizations</span>
@@ -62,7 +62,7 @@ const board = [
             <span class="on">Roles & Permissions</span>
             <span>Teams</span>
             <span>Audit trail</span>
-          </nav>
+          </div>
           <div class="m-main">
             <div class="m-head">
               <strong data-b="t">Roles & Permissions</strong>
@@ -144,7 +144,7 @@ export default function Page() {
     {
       slug === 'alara-code' && (
         <div class="mock-body m-pipe">
-          <nav class="m-steps" data-b="r">
+          <div class="m-steps" data-b="r">
             <small>Steps</small>
             {steps.map(([cmd, name], i) => (
               <span class:list={['m-step', i < 3 && 'done', i === 3 && 'on']} data-step>
@@ -153,7 +153,7 @@ export default function Page() {
                 <em>{name}</em>
               </span>
             ))}
-          </nav>
+          </div>
           <div class="m-chat" data-b="r">
             <small>Pipeline chat</small>
             <p class="m-msg">
@@ -183,7 +183,7 @@ export default function Page() {
     {
       slug === 'alara-space' && (
         <div class="mock-body m-wiki">
-          <nav class="m-side" data-b="r">
+          <div class="m-side" data-b="r">
             <span class="m-search">Search or jump to</span>
             <span>Recent</span>
             <span>Starred</span>
@@ -193,7 +193,7 @@ export default function Page() {
             <span class="in2 on">Deploy checklist</span>
             <span class="in2">Rollback</span>
             <span>Onboarding</span>
-          </nav>
+          </div>
           <div class="m-main">
             <div class="m-head">
               <small data-b="t">Engineering / Runbooks</small>
@@ -213,7 +213,7 @@ export default function Page() {
               </li>
             </ul>
           </div>
-          <aside class="m-rail" data-b="r">
+          <div class="m-rail" data-b="r">
             <div class="m-tabs">
               <span>Comments</span>
               <span>Files</span>
@@ -223,7 +223,7 @@ export default function Page() {
             <span class="m-ver">v3 · saved</span>
             <span class="m-ver">v2 · saved</span>
             <span class="m-ver">v1 · created</span>
-          </aside>
+          </div>
         </div>
       )
     }
@@ -231,7 +231,7 @@ export default function Page() {
     {
       slug === 'alara-plan' && (
         <div class="mock-body m-app">
-          <nav class="m-side" data-b="r">
+          <div class="m-side" data-b="r">
             <b>Alara Plan</b>
             <span>Dashboard</span>
             <span class="on">Projects</span>
@@ -239,7 +239,7 @@ export default function Page() {
             <span>Meetings</span>
             <span>Time</span>
             <span>Settings</span>
-          </nav>
+          </div>
           <div class="m-main">
             <div class="m-tabs" data-b="r">
               <span class="on">Board</span>
@@ -272,7 +272,7 @@ export default function Page() {
     {
       slug === 'odin' && (
         <div class="mock-body m-wiki">
-          <nav class="m-side" data-b="r">
+          <div class="m-side" data-b="r">
             <small>Channels</small>
             <span class="on">WhatsApp</span>
             <span>Web chat</span>
@@ -280,20 +280,20 @@ export default function Page() {
             <small>Journeys</small>
             <span>Order updates</span>
             <span>Win-back</span>
-          </nav>
+          </div>
           <div class="m-main m-thread" data-b="r">
             <span class="m-bubble" data-bubble>Where is my order?</span>
             <span class="m-bubble me" data-bubble>It is out for delivery and arrives today.</span>
             <span class="m-bubble" data-bubble>Great, thank you!</span>
             <span class="m-typing" data-typing><i /><i /><i /></span>
           </div>
-          <aside class="m-rail" data-b="r">
+          <div class="m-rail" data-b="r">
             <small>Sentiment</small>
             <strong data-sentiment>neutral</strong>
             <span class="m-meter"><i data-meter /></span>
             <small>Delivered</small>
             <span class="m-ver">3 of 3 messages</span>
-          </aside>
+          </div>
         </div>
       )
     }
